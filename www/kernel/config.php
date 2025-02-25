@@ -3,7 +3,7 @@ if (!defined('DIR_CLASS_SYS')) {
     die('Accès direct interdit');
 }
 
-$projectName = 'DraconisCMS';
+$projectName = 'DragonX';
 
 // Clés de cryptage des données
 $encryptionKeys = [
