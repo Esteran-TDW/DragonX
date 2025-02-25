@@ -1,0 +1,24 @@
+# Fichiers et dossiers de log
+*.log
+logs/
+log/
+*.log
+
+# Cache de node
+node_modules/
+.npm/
+
+# Cache de Yarn
+.yarn/
+
+# Environnements de développement
+.env
+.env.local
+.env.*.local
+
+# Fichiers de configuration
+.DS_Store
+._.DS_Store
+.idea/
+.vscode/
+
