@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Répertoire racine du projet
-base_dir=~/Developpement/www/DraconisCMS
+base_dir=~/Developpement/www/DragonX
 
 # Créer le répertoire principal
 mkdir -p "$base_dir"

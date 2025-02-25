@@ -16,7 +16,7 @@ if (!defined('DIR_CLASS_SYS')) {
     <meta name="author" content="Votre nom ou organisation">
     <link rel="icon" href="<?php echo IMG; ?>/favicon.ico" type="image/x-icon">
 
-    <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) : 'DraconisCRM'; ?></title>
+    <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) : 'DragonX'; ?></title>
 
     <!-- Inclusion des styles -->
     <?php require_once __DIR__ . '/styles.php'; ?>
