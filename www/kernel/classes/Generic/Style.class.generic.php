@@ -11,6 +11,7 @@ class Style
     private $theme;       // Nom du thème à charger
     private $cssFiles = []; // Liste des fichiers CSS collectés
 
+
     /**
      * Constructeur : initialise le chemin de base et le thème.
      *
@@ -23,6 +24,11 @@ class Style
         $this->theme = $theme;
         $this->loadCSSFiles();
     }
+
+
+
+    private function __clone() {} // Empêche le clonage
+    public function __wakeup() {} // Empêche la désérialisation
 
     /**
      * Parcourt le répertoire du thème pour collecter les fichiers CSS.

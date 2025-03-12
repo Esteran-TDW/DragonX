@@ -4,6 +4,7 @@ if (!defined('DIR_CLASS_SYS')) {
 }
 
 $projectName = 'DragonX';
+$templateName = 'DragonX';
 
 // Clés de cryptage des données
 $encryptionKeys = [
@@ -114,5 +115,8 @@ return [
     // Custom settings
     'custom' => [
         'pagination_limit' => 10, // Number of items per page for pagination
+    ],
+    'template' => [
+        'name' => $templateName,
     ],
 ];

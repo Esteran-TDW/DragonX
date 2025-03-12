@@ -3,11 +3,10 @@
 if (!defined('DIR_CLASS_SYS')) {
     die('Accès direct interdit');
 }
+//require_once $Templates->getTemplatePath().'/header/header.php';
 
-require_once 'includes/templates/header/header.php';
 
 
-/* 
 $themeCSS = 'default';
 
 ?>
@@ -33,7 +32,7 @@ $themeCSS = 'default';
         // Créer une instance de Style
     
         // Récupérer toutes les balises <link>
-        $cssLinks = $Style->getCSSLinks();
+       $cssLinks = $Style->getCSSLinks();
 
         // Parcourir et afficher les balises
         foreach ($cssLinks as $link) {
@@ -50,4 +49,4 @@ $themeCSS = 'default';
         <nav>
             <?php require_once(MENU); ?>
         </nav>
-    </header> */
+    </header>

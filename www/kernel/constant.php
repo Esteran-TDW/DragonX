@@ -2,15 +2,18 @@
 // Directories for class definitions
 defined('DIR_CLASS_SYS') ?: define('DIR_CLASS_SYS', MAIN_DIRECTORY . '/includes/classes/System'); // Directory for system-level classes
 defined('DIR_CLASS_GEN') ?: define('DIR_CLASS_GEN', MAIN_DIRECTORY . '/includes/classes/Generic'); // Directory for generic/reusable classes
-defined('DIR_CLASS_SPE') ?: define('DIR_CLASS_SPE', MAIN_DIRECTORY . '/includes/classes/Specific'); // Directory for specific/project-related classes
+//defined('DIR_CLASS_SPE') ?: define('DIR_CLASS_SPE', MAIN_DIRECTORY . '/includes/classes/Specific'); // Directory for specific/project-related classes
 
 // Directories for function definitions
 defined('DIR_FUNC_SYS') ?: define('DIR_FUNC_SYS', MAIN_DIRECTORY . '/includes/functions/System'); // Directory for system-level functions
 defined('DIR_FUNC_GEN') ?: define('DIR_FUNC_GEN', MAIN_DIRECTORY . '/includes/functions/Generic'); // Directory for generic/reusable functions
-defined('DIR_FUNC_SPE') ?: define('DIR_FUNC_SPE', MAIN_DIRECTORY . '/includes/functions/Specific'); // Directory for specific/project-related functions
+//defined('DIR_FUNC_SPE') ?: define('DIR_FUNC_SPE', MAIN_DIRECTORY . '/includes/functions/Specific'); // Directory for specific/project-related functions
 
 // Directory for modules
 defined('DIR_MODULES') ?: define('DIR_MODULES', MAIN_DIRECTORY . '/modules'); // Directory for modules or components
+
+// Directory for modules
+defined('DIR_TEMPLATES') ?: define('DIR_TEMPLATES', 'includes/templates'); // Directory for modules or components
 
 // Directory for uploads
 defined('DIR_UPLOADS') ?: define('DIR_UPLOADS', MAIN_DIRECTORY . '/uploads'); // Directory for uploaded files
