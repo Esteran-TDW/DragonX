@@ -10,19 +10,22 @@ class Security extends System
     private $encryptionMethod;     // Méthode de cryptage (ex : aes-256-cbc)
     private $secretkey;            // Clé secrète
 
+
     public function __construct()
     {
-        parent::__construct();
+             parent::__construct();
 
-        $this->encryptionMethod = 'aes-256-cbc';
-        $this->env = $this->config['current'];
+            $this->encryptionMethod = 'aes-256-cbc';
+            $this->env = $this->config['current'];
 
-        // Vérifie si la clé de cryptage existe
-        if (!isset($this->config['encryption']['secret_key']['secretkey'])) {
-            throw new Exception('Clé de cryptage manquante pour l\'environnement : ' . $this->env);
-        }
 
-        $this->secretkey = $this->config['encryption']['secret_key']['secretkey'];
+            // Vérifie si la clé de cryptage existe
+            if (!isset($this->config['encryption']['secret_key']['secretkey'])) {
+                throw new Exception('Clé de cryptage manquante pour l\'environnement : ' . $this->env);
+                }
+
+            $this->secretkey = $this->config['encryption']['secret_key']['secretkey'];
+
     }
 
     /**

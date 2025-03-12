@@ -9,7 +9,6 @@ class Database extends System
     private $pdo;
     private $stmt;
     private $error;
-    private $db_password = NULL;
     public $where = [];    // Pour stocker la condition WHERE
     public $bind = [];     // Pour stocker les valeurs à lier
 
@@ -19,10 +18,10 @@ class Database extends System
     public function __construct()
     {
         // Chargement de la configuration de la base de données à partir de config.php
-        // $this->config = include('config.php');
-        parent::__construct(); // Important pour appeler le constructeur de System
+     parent::__construct(); // Important pour appeler le constructeur de System
 
-        // Vérifier que $this->config est bien défini
+
+         // Vérifier que $this->config est bien défini
         if (empty($this->config)) {
             throw new Exception("Configuration non chargée");
         }
@@ -47,7 +46,7 @@ class Database extends System
         } catch (PDOException $e) {
             $this->error = $e->getMessage();
             die("Connection Database failed: " . $this->error);
-        }
+        } 
     }
 
     // Préparer et exécuter les requêtes avec la gestion des binds

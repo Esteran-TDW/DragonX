@@ -1,14 +1,9 @@
 <?php
 
-session_start();
+//session_start();
 
-require_once __DIR__ . '/kernel/classes/System/System.class.system.php';
+require_once __DIR__ . '/kernel/autoload.php';
 
-// Vérification et création des objects
-$System = $System ?? new System();
-$Security = $Security ?? new Security();
-$db = $db ?? new Database();
-$Style = $Style ?? new Style();
 
 
 // Chargement de la structure de la page

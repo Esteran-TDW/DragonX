@@ -15,7 +15,7 @@ $params = [
 ];
 
 // Récupération des menus depuis la base de données
-$menu = $db->select($columns, $table, $params);
+$menu = $Database->select($columns, $table, $params);
 
 // Organisation des données en menus principaux et sous-menus
 $menuTree = [];
