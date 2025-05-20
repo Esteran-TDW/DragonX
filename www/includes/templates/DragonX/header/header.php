@@ -11,6 +11,6 @@ require_once __DIR__ . '/head.php';
 <body>
     <header>
         <nav>
-            <?php require_once __DIR__ . '/navbar.php'; ?>
+            <?php require_once __DIR__ . '/menu.php'; ?>
         </nav>
     </header>

@@ -6,3 +6,6 @@ if (!defined('DIR_CLASS_SYS')) {
 
 // Inclusion du menu
 require_once(MENU);
+
+require_once $Templates->getTemplatePath() .'/menu/navbar.php';
+

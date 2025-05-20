@@ -4,38 +4,46 @@ if (!defined('DIR_CLASS_SYS')) {
     die('Accès direct interdit');
 }
 
-
 class Style
 {
-    private $cssBasePath; // Chemin de base vers le répertoire CSS
-    private $theme;       // Nom du thème à charger
-    private $cssFiles = []; // Liste des fichiers CSS collectés
-
+    private $cssBasePath;      // Chemin de base vers le répertoire CSS
+    private $theme;            // Nom du thème à charger
+    private $cssFiles = [];    // Liste des fichiers CSS collectés
+    private $cachePath;        // Répertoire de cache
+    private $minifiedCSSFile;  // Fichier CSS minifié
+    private $cacheListFile;    // Fichier de cache pour les fichiers CSS
 
     /**
-     * Constructeur : initialise le chemin de base et le thème.
+     * Constructeur : initialise le chemin de base, le thème et le cache.
      *
-     * @param string $cssBasePath Chemin de base vers le répertoire assets/css/.
      * @param string $theme Nom du thème (ex : 'default').
      */
     public function __construct($theme = 'default')
-    {
-        $this->cssBasePath = rtrim('assets/templates', '/');
-        $this->theme = $theme;
+    {    
+        global $Templates;
+        if (!isset($Templates)) {
+            throw new Exception('Templates object not found.');
+        }
+
+        $templateName = $Templates->config['template']['name'];
+        $this->cssBasePath = rtrim('includes/templates/'.$templateName.'/assets/css', '/');
+        $this->theme = $templateName;
+
+        // Répertoire de cache pour le CSS minifié
+        $this->cachePath = 'cache/css/';
+        $this->minifiedCSSFile = $this->cachePath . '' . $this->theme . '.min.css';
+        $this->cacheListFile = $this->cachePath . $this->theme . '.css.cache.php';  // Cache des fichiers CSS pour le thème
+
         $this->loadCSSFiles();
     }
-
-
-
-    private function __clone() {} // Empêche le clonage
-    public function __wakeup() {} // Empêche la désérialisation
 
     /**
      * Parcourt le répertoire du thème pour collecter les fichiers CSS.
      */
     private function loadCSSFiles()
     {
-        $themePath = "{$this->cssBasePath}/{$this->theme}";
+        $themePath = $this->cssBasePath;
+
         if (!is_dir($themePath)) {
             throw new Exception("Le thème spécifié n'existe pas : $themePath");
         }
@@ -75,28 +83,81 @@ class Style
     }
 
     /**
-     * Génère la balise <link> pour un fichier CSS.
+     * Vérifie si le cache des fichiers CSS minifiés est valide.
+     * Utilise le md5 pour vérifier les modifications.
      *
-     * @param string $file Chemin du fichier CSS.
-     * @return string Balise <link>.
+     * @return bool
      */
-    private function generateLinkTag($file)
+    private function isCacheValid()
     {
-        return "<link rel=\"stylesheet\" href=\"{$this->cssBasePath}/{$file}\">";
+        // Si le fichier minifié n'existe pas ou si les fichiers CSS sont plus récents que le cache
+        if (!file_exists($this->minifiedCSSFile)) {
+            return false;
+        }
+
+        $cacheTime = filemtime($this->minifiedCSSFile);
+        $cachedFiles = file_exists($this->cacheListFile) ? include $this->cacheListFile : [];
+
+        // Vérifier les fichiers CSS et leurs hash (md5)
+        foreach ($this->cssFiles as $file) {
+            $filePath = $this->cssBasePath . '/' . $file;
+            if (!isset($cachedFiles[$file]) || $cachedFiles[$file] !== md5_file($filePath)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
-     * Retourne les balises <link> générées pour tous les fichiers CSS.
+     * Crée un fichier CSS minifié et le place dans le cache.
+     */
+    private function createMinifiedCSS()
+    {
+        $minifiedCSS = '';
+        $currentFiles = [];
+
+        // Générer le contenu minifié pour chaque fichier CSS
+        foreach ($this->cssFiles as $file) {
+            $filePath = $this->cssBasePath . '/' . $file;
+            $cssContent = file_get_contents($filePath);
+
+            // Simple minification (enlève les espaces et commentaires)
+            $cssContent = preg_replace('/\s+/', ' ', $cssContent);  // Réduire les espaces blancs
+            $cssContent = preg_replace('/\/\*.*?\*\//', '', $cssContent);  // Supprimer les commentaires
+
+            $minifiedCSS .= $cssContent . "\n";
+
+            // Ajouter le hash md5 pour chaque fichier dans le cache
+            $currentFiles[$file] = md5_file($filePath);
+        }
+
+        // Créer le répertoire de cache s'il n'existe pas
+        if (!is_dir($this->cachePath)) {
+            mkdir($this->cachePath, 0777, true);
+        }
+
+        // Sauvegarder le CSS minifié dans le cache
+        file_put_contents($this->minifiedCSSFile, $minifiedCSS);
+        file_put_contents($this->cacheListFile, '<?php return ' . var_export($currentFiles, true) . ';');
+    }
+
+    /**
+     * Retourne la balise <link> pour le fichier CSS minifié.
      *
-     * @return array Tableau des balises <link>.
+     * @return string Balise <link>.
      */
     public function getCSSLinks()
     {
-        $links = [];
-        foreach ($this->cssFiles as $file) {
-            $links[] = $this->generateLinkTag($file);
+        // Si le cache n'est pas valide, régénérer le fichier minifié
+        if (!$this->isCacheValid()) {
+            $this->createMinifiedCSS();
         }
-        return $links;
+
+        // Retourne un seul <link> vers le fichier minifié
+        return [
+            "<link rel=\"stylesheet\" href=\"{$this->minifiedCSSFile}\">"
+        ];
     }
 
     /**

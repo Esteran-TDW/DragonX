@@ -35,8 +35,8 @@ class Templates extends System
             throw new Exception("Aucun template défini dans la configuration.");
         }
 
-        $this->template['path'] = DIR_TEMPLATES .'/'. $this->getTemplateName();
-
+        $this->template['path'] = MAIN_DIRECTORY . DIR_TEMPLATES .'/'. $this->getTemplateName();
+        
         if (!is_dir($this->template['path'])) {
             throw new Exception("Le répertoire du template '{$this->templateName}' est introuvable.");
         }

@@ -1,0 +1,19 @@
+# Bloquer l'accès direct aux fichiers .php et .cache.php dans /cache
+<FilesMatch "\.(php|cache\.php)$">
+    Require all denied
+</FilesMatch>
+
+# Autoriser l'accès uniquement aux fichiers .css et .js dans /cache
+<FilesMatch "\.(css|js)$">
+    Require all granted
+</FilesMatch>
+
+# Interdire l'accès à tous les autres fichiers dans /cache
+<Files /cache/*>
+    Require all denied
+</Files>
+
+# Autoriser l'accès aux fichiers PHP dans le répertoire principal (index.php)
+<Files "index.php">
+    Require all granted
+</Files>

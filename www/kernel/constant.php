@@ -1,4 +1,8 @@
 <?php
+
+// Directory KERNEL
+defined('KERNEL') ?: define('KERNEL', MAIN_DIRECTORY . '/kernel'); // Directory for system-level classes
+
 // Directories for class definitions
 defined('DIR_CLASS_SYS') ?: define('DIR_CLASS_SYS', MAIN_DIRECTORY . '/includes/classes/System'); // Directory for system-level classes
 defined('DIR_CLASS_GEN') ?: define('DIR_CLASS_GEN', MAIN_DIRECTORY . '/includes/classes/Generic'); // Directory for generic/reusable classes
@@ -13,7 +17,7 @@ defined('DIR_FUNC_GEN') ?: define('DIR_FUNC_GEN', MAIN_DIRECTORY . '/includes/fu
 defined('DIR_MODULES') ?: define('DIR_MODULES', MAIN_DIRECTORY . '/modules'); // Directory for modules or components
 
 // Directory for modules
-defined('DIR_TEMPLATES') ?: define('DIR_TEMPLATES', 'includes/templates'); // Directory for modules or components
+defined('DIR_TEMPLATES') ?: define('DIR_TEMPLATES', '/includes/templates'); // Directory for modules or components
 
 // Directory for uploads
 defined('DIR_UPLOADS') ?: define('DIR_UPLOADS', MAIN_DIRECTORY . '/uploads'); // Directory for uploaded files

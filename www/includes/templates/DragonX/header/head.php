@@ -14,9 +14,13 @@ if (!defined('DIR_CLASS_SYS')) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Description de votre site">
     <meta name="author" content="Votre nom ou organisation">
-    <link rel="icon" href="<?php echo IMG; ?>/favicon.ico" type="image/x-icon">
+<!--     <link rel="icon" href="<?php echo IMG; ?>/favicon.ico" type="image/x-icon"> -->
 
     <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) : 'DragonX'; ?></title>
+
+    <?php 
+   $js = $System->autoloadJS();
+    ?>
 
     <!-- Inclusion des styles -->
     <?php require_once __DIR__ . '/styles.php'; ?>

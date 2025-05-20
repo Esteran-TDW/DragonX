@@ -37,6 +37,20 @@ class System
             'Templates'
         ];
 
+    public $subDirectories_JS = [
+        'kernel' => [
+            'assets' => [
+                'js',
+            ],
+        ],
+    ];
+
+    public $subDirectories_CSS = [
+        'assets' => [
+                'css',
+        ],
+    ];
+
     public $config = [];
     public $sessionId;
     public $instance;
@@ -121,7 +135,7 @@ class System
         
         // Vérifier si la racine du projet a été trouvée et définir MAIN_DIRECTORY
         if ($projectRoot !== false) {
-            defined('MAIN_DIRECTORY') ?: define('MAIN_DIRECTORY', $projectRoot .'/');
+            defined('MAIN_DIRECTORY') ?: define('MAIN_DIRECTORY', $projectRoot);
         } else {
             echo "Impossible de trouver le répertoire racine du projet.";
         }
@@ -133,120 +147,320 @@ class System
     }
 
     public function autoloadFilesClasses()
-    {
-        foreach ($this->subDirectories_Class as $arch => $types) {
-            foreach($types as $type => $directories) {
-                foreach ($directories as $directory) {
-                    $path = MAIN_DIRECTORY . $arch.'/'.$type.'/'.$directory.'/';
-                    if (!is_dir($path)) {
-                        throw new Exception("Le répertoire n'existe pas : $path");
-                    } else {
-                    $filteredFiles = array_filter(glob($path . '*.class.' . strtolower($directory) . '.php'), function ($file) {
-                        return strpos($file, 'System.class.system') === false; // Exclut les fichiers contenant "System.class.system"
-                    });
+{
+    $cacheFile = MAIN_DIRECTORY . '/cache/main/main.classes.cache.php';
+    $classNames = [];
+    $files = [];
 
-                        if (!empty($filteredFiles)) {
-                            $files[] = $filteredFiles;
-                        }
+    $cacheFile = MAIN_DIRECTORY . '/cache/main/main.classes.cache.php';
+    $cacheDir = dirname($cacheFile); // Récupère le chemin du répertoire contenant le fichier
+
+    // Vérifie si le répertoire existe, sinon le crée
+    if (!@mkdir($cacheDir, 0755, true) && !is_dir($cacheDir)) {
+        throw new Exception("Impossible de créer le répertoire de cache : $cacheDir");
+    }
+
+    // Chargement du cache existant
+    $cachedFiles = file_exists($cacheFile) ? include $cacheFile : [];
+
+    // Fichier temporaire pour reconstruire le cache
+    $currentFiles = [];
+
+    foreach ($this->subDirectories_Class as $arch => $types) {
+        foreach ($types as $type => $directories) {
+            foreach ($directories as $directory) {
+                $path = MAIN_DIRECTORY . '/' . $arch . '/' . $type . '/' . $directory . '/';
+                if (!is_dir($path)) {
+                    throw new Exception("Le répertoire n'existe pas : $path");
+                }
+
+                $foundFiles = array_filter(
+                    glob($path . '*.class.' . strtolower($directory) . '.php'),
+                    fn($file) => strpos($file, 'System.class.system') === false
+                );
+
+                foreach ($foundFiles as $file) {
+                    $currentFiles[$file] = md5_file($file);
+                }
+            }
+        }
+    }
+
+    // Vérification des différences entre cache et état actuel
+    $rebuildCache = false;
+    $rebuildCache = (count($cachedFiles) !== count($currentFiles)) || array_diff_assoc($currentFiles, $cachedFiles);
+
+    // Mise à jour du cache si nécessaire
+    if ($rebuildCache) {
+        file_put_contents($cacheFile, '<?php return ' . var_export($currentFiles, true) . ';');
+        $files = array_keys($currentFiles);
+    } else {
+        $files = array_keys($cachedFiles);
+    }
+
+    // Tri selon priorité
+    $priorityClasses = $this->priorityClasses;
+
+    usort($files, function ($a, $b) use ($priorityClasses) {
+        $classA = preg_replace('/\.class\..+\.php$/', '', basename($a));
+        $classB = preg_replace('/\.class\..+\.php$/', '', basename($b));
+
+        $indexA = array_search($classA, $priorityClasses);
+        $indexB = array_search($classB, $priorityClasses);
+
+        if ($indexA !== false && $indexB !== false) return $indexA - $indexB;
+        if ($indexA !== false) return -1;
+        if ($indexB !== false) return 1;
+
+        return strcmp($classA, $classB);
+    });
+
+    // Inclusion des fichiers et création des noms de classe
+    foreach ($files as $file) {
+        require_once $file;
+        $filename = basename($file);
+        $classNames[] = preg_replace('/\.class\..+\.php$/', '', $filename);
+    }
+
+    return $classNames;
+}
+    
+        /**
+        * Autoload des fichiers de fonctions
+        * @return void
+        */
+public function autoloadFilesFunctions()
+{
+    $cacheFile = MAIN_DIRECTORY . '/cache/main/main.functions.cache.php';
+    $currentFiles = [];
+    $cachedFiles = file_exists($cacheFile) ? include $cacheFile : [];
+
+    // Scan des fichiers .func.[type].php dans les bons dossiers
+    foreach ($this->subDirectories_Functions as $arch => $types) {
+        foreach ($types as $type => $directories) {
+            foreach ($directories as $directory) {
+                $path = MAIN_DIRECTORY . '/' . $arch . '/' . $type . '/' . $directory . '/';
+                if (!is_dir($path)) {
+                    throw new Exception("Le répertoire n'existe pas : $path");
+                }
+
+                $foundFiles = glob($path . '*.func.' . strtolower($directory) . '.php');
+                foreach ($foundFiles as $file) {
+                    $currentFiles[$file] = md5_file($file);
+                }
+            }
+        }
+    }
+
+    // Comparaison avec le cache
+    $rebuildCache = false;
+    $rebuildCache = (count($cachedFiles) !== count($currentFiles)) || array_diff_assoc($currentFiles, $cachedFiles);
+
+
+    // Mise à jour du cache si besoin
+    if ($rebuildCache) {
+        file_put_contents($cacheFile, '<?php return ' . var_export($currentFiles, true) . ';');
+        $files = array_keys($currentFiles);
+    } else {
+        $files = array_keys($cachedFiles);
+    }
+
+    // Inclusion des fichiers
+    foreach ($files as $file) {
+        require_once $file;
+    }
+}
+
+public function autoloadJS()
+{
+    $cacheListFile = MAIN_DIRECTORY . '/cache/main/main.js.cache.php';
+    $cacheMinifiedFile = MAIN_DIRECTORY . '/cache/main/main.min.js';
+    $files = [];
+
+    // Chargement du cache existant
+    $cachedFiles = file_exists($cacheListFile) ? include $cacheListFile : [];
+
+    // Liste actuelle
+    $currentFiles = [];
+
+    foreach ($this->subDirectories_JS as $arch => $types) {
+        foreach ($types as $type => $directories) {
+            foreach ($directories as $directory) {
+                $path = MAIN_DIRECTORY . '/' . $arch . '/' . $type . '/' . $directory . '/';
+                if (!is_dir($path)) {
+                    throw new Exception("Le répertoire n'existe pas : $path");
+                }
+
+                $jsFiles = glob($path . '*.js');
+                foreach ($jsFiles as $file) {
+                    $currentFiles[$file] = md5_file($file);
+                }
+            }
+        }
+    }
+
+    // Vérifier si le cache est à jour ou si le fichier minifié est manquant
+    $rebuildCache = !file_exists($cacheMinifiedFile); 
+    $rebuildCache = (count($cachedFiles) !== count($currentFiles)) || array_diff_assoc($currentFiles, $cachedFiles);
+
+
+    // Recréation du fichier concaténé si besoin
+    if ($rebuildCache) {
+        $combined = '';
+        foreach (array_keys($currentFiles) as $file) {
+            $content = file_get_contents($file);
+            $combined .= "\n/* === " . basename($file) . " === */\n" . $content;
+        }
+        // Optionnel : minification simplifiée (peut être remplacée par une lib)
+        $combined = preg_replace('/\/\/.*$/m', '', $combined); // retire les commentaires //
+        $combined = preg_replace('/\s+/', ' ', $combined);     // retire les espaces excessifs
+        $combined = trim($combined);
+
+        file_put_contents($cacheMinifiedFile, $combined);
+        file_put_contents($cacheListFile, '<?php return ' . var_export($currentFiles, true) . ';');
+    }
+
+    // Inclure le fichier unique dans la page
+    $relativePath = str_replace(MAIN_DIRECTORY . '/', '', $cacheMinifiedFile);
+    echo '<script src="' . htmlspecialchars($relativePath) . '?v=' . md5_file($cacheMinifiedFile) . '"></script>' . PHP_EOL;
+}
+
+       
+/* public function autoloadCSS()
+{
+    $files = [];
+
+    foreach ($this->subDirectories_CSS as $arch => $types) {
+        foreach ($types as $directory) {
+                $path = MAIN_DIRECTORY . '/' . $arch . '/' . $directory . '/';
+                if (!is_dir($path)) {
+                    throw new Exception("Le répertoire n'existe pas : $path");
+                } else {
+                    // Rechercher tous les fichiers .js dans le répertoire
+                    $filesInDirectory = glob($path . '*.css');
+                    if (!empty($filesInDirectory)) {
+                        $files = array_merge($files, $filesInDirectory);
                     }
                 }
-            }
         }
-
-        // Fonction de tri pour réordonner le tableau $files en fonction de $this->priorityClasses
-        $priorityClasses = $this->priorityClasses;
-
-        $sortFilesByPriority = function (&$files) use ($priorityClasses) {
-            usort($files, function ($a, $b) use ($priorityClasses) {
-                // Extraire uniquement le nom de la classe en retirant tout le chemin et l'extension
-                $classA = preg_replace('/\.class\..+\.php$/', '', basename($a));
-                $classB = preg_replace('/\.class\..+\.php$/', '', basename($b));
-
-                // Trouver l'index des classes dans $this->priorityClasses, si elles existent
-                $indexA = array_search($classA, $this->priorityClasses);
-                $indexB = array_search($classB, $this->priorityClasses);
-
-                // Si les deux classes sont dans la liste des priorités, les comparer par index
-                if ($indexA !== false && $indexB !== false) {
-                    return $indexA - $indexB;
-                }
-
-                // Si seule la classe A est prioritaire, elle passe avant
-                if ($indexA !== false) {
-                    return -1;
-                }
-
-                // Si seule la classe B est prioritaire, elle passe avant
-                if ($indexB !== false) {
-                    return 1;
-                }
-
-                // Sinon, tri par ordre alphabétique
-                return strcmp($classA, $classB);
-            });
-        };
-        
-        
-
-        // Appliquer le tri à chaque sous-tableau
-        foreach ($files as &$subArray) {
-            $sortFilesByPriority($subArray, $this->priorityClasses);
-        }
-
-        foreach ($files as $keyes => $keys) {
-           
-            foreach ($keys as $key => $file) {
-
-                require_once $file;
-
-                $filename = basename($file);
-
-                // Utiliser preg_replace pour retirer les parties indésirables du nom du fichier
-                $classNames[] = preg_replace('/\.class\..+\.php$/', '', $filename);
-            }
-        }
-  
-        return $classNames;
-
     }
-                 
-        public function autoloadFilesFunctions()
-    {
-        foreach ($this->subDirectories_Functions as $arch => $types) {
-            foreach($types as $type => $directories) {
-                foreach ($directories as $directory) {
-                    $path = MAIN_DIRECTORY . $arch.'/'.$type.'/'.$directory.'/';
-                    
-                    if (!is_dir($path)) {
-                        throw new Exception("Le répertoire n'existe pas : $path");
-                    } else {
-                    $filteredFiles = array_filter(glob($path . '*.class.' . strtolower($directory) . '.php'), function ($file) {
-                        return strpos($file, 'System.class.system') === false; // Exclut les fichiers contenant "System.class.system"
-                    });
 
-                        if (!empty($filteredFiles)) {
-                            $files[] = $filteredFiles;
-                        }
-                    }
-                }
-            }
-        }
-
-
-        foreach ($files as $keyes => $keys) {
-           
-            foreach ($keys as $key => $file) {
-
-                require_once $file;
-
-
-            }
-        }
-  
-  
-
+    // Générer les balises <script> pour chaque fichier JS
+    foreach ($files as $file) {
+        // Convertir le chemin absolu en chemin relatif pour le navigateur
+        $relativePath = str_replace(MAIN_DIRECTORY . '/', '', $file);
+        echo '<link rel="stylesheet" href="' . htmlspecialchars($relativePath) . '">' . PHP_EOL;
     }
-                    
+} */
+
+/* public function autoloadCSS()
+{
+    $cacheFile = MAIN_DIRECTORY . '/cache/main/main.css.cache.php';
+    $files = [];
+    $currentFiles = [];
+
+    // Chargement du cache existant
+    $cachedFiles = file_exists($cacheFile) ? include $cacheFile : [];
+
+    foreach ($this->subDirectories_CSS as $arch => $directories) {
+        foreach ($directories as $directory) {
+            $path = MAIN_DIRECTORY . '/' . $arch . '/' . $directory . '/';
+            if (!is_dir($path)) {
+                throw new Exception("Le répertoire n'existe pas : $path");
+            }
+
+            $foundFiles = glob($path . '*.css');
+            foreach ($foundFiles as $file) {
+                $currentFiles[$file] = md5_file($file);
+            }
+        }
+    }
+
+    // Vérifier si le cache est à jour
+    $rebuildCache = false;
+
+    foreach ($currentFiles as $file => $hash) {
+        if (!isset($cachedFiles[$file]) || $cachedFiles[$file] !== $hash) {
+            $rebuildCache = true;
+            break;
+        }
+    }
+
+    if (!$rebuildCache && count($cachedFiles) !== count($currentFiles)) {
+        $rebuildCache = true;
+    }
+
+    // Mettre à jour le cache si nécessaire
+    if ($rebuildCache) {
+        file_put_contents($cacheFile, '<?php return ' . var_export($currentFiles, true) . ';');
+        $files = array_keys($currentFiles);
+    } else {
+        $files = array_keys($cachedFiles);
+    }
+
+    // Générer les balises <link> pour chaque fichier CSS
+    foreach ($files as $file) {
+        $relativePath = str_replace(MAIN_DIRECTORY . '/', '', $file);
+        echo '<link rel="stylesheet" href="' . htmlspecialchars($relativePath) . '">' . PHP_EOL;
+    }
+} */
+
+public function autoloadCSS()
+{
+    $cacheListFile = MAIN_DIRECTORY . '/cache/main/main.css.cache.php';
+    $cacheMinifiedFile = MAIN_DIRECTORY . '/cache/main/main.min.css';
+    $files = [];
+
+    // Chargement du cache existant
+    $cachedFiles = file_exists($cacheListFile) ? include $cacheListFile : [];
+
+    // Liste actuelle
+    $currentFiles = [];
+
+    foreach ($this->subDirectories_CSS as $arch => $directories) {
+        foreach ($directories as $directory) {
+            $path = MAIN_DIRECTORY . '/' . $arch . '/' . $directory . '/';
+            if (!is_dir($path)) {
+                throw new Exception("Le répertoire n'existe pas : $path");
+            }
+
+            $cssFiles = glob($path . '*.css');
+            foreach ($cssFiles as $file) {
+                $currentFiles[$file] = md5_file($file);
+            }
+        }
+    }
+
+    // Vérifier si le cache est à jour ou si le fichier minifié est manquant
+    $rebuildCache = !file_exists($cacheMinifiedFile); 
+    $rebuildCache = (count($cachedFiles) !== count($currentFiles)) || array_diff_assoc($currentFiles, $cachedFiles);
+
+
+    // Recréation du fichier concaténé si besoin
+    if ($rebuildCache) {
+        $combined = '';
+        foreach (array_keys($currentFiles) as $file) {
+            $content = file_get_contents($file);
+            $combined .= "\n/* === " . basename($file) . " === */\n" . $content;
+        }
+
+        // Minification simple : retirer commentaires et espaces
+        $combined = preg_replace('!/\*.*?\*/!s', '', $combined); // commentaires /* */
+        $combined = preg_replace('/\s+/', ' ', $combined);       // espaces
+        $combined = preg_replace('/\s*([{}:;,])\s*/', '$1', $combined); // espaces autour des symboles
+        $combined = trim($combined);
+
+        file_put_contents($cacheMinifiedFile, $combined);
+        file_put_contents($cacheListFile, '<?php return ' . var_export($currentFiles, true) . ';');
+    }
+
+    // Inclure le fichier unique dans la page
+    $relativePath = str_replace(MAIN_DIRECTORY . '/', '', $cacheMinifiedFile);
+    echo '<link rel="stylesheet" href="' . htmlspecialchars($relativePath) . '?v=' . md5_file($cacheMinifiedFile) . '">' . PHP_EOL;
+}
+
+
+
 
     public function loadConfig()
     {

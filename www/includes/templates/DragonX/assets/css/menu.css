@@ -1,0 +1,95 @@
+/* Conteneur principal du menu */
+#menu_container {
+    display: flex;
+    /* Flexbox pour aligner les éléments */
+    justify-content: space-between;
+    /* Espacement entre logo et menu */
+    align-items: center;
+    /* Centrer verticalement les éléments */
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background-color: var(--col-Black);
+    /* Fond noir pour tout le conteneur */
+    align-items: flex-end;
+}
+
+/* Liste principale horizontale */
+#menu {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    /* Espacement entre les items */
+    padding: 0;
+    /* Supprimer padding interne */
+    margin: 0;
+    /* Pas de marge externe */
+    margin-right: 20px;
+}
+
+/* Style des éléments principaux */
+.menu-item {
+    position: relative;
+    /* Important pour les sous-menus */
+}
+
+/* Liens principaux */
+.main-menu {
+    text-decoration: none;
+    color: var(--col-White);
+    /* Texte blanc */
+    font-weight: bold;
+    padding: 10px 15px;
+    /* Espacement interne */
+    display: block;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+    
+}
+
+/* Survol des éléments principaux */
+.main-menu:hover {
+    background-color: var(--col-White);
+    color: black;
+    border-radius: 5px;
+}
+
+/* Liste des sous-menus */
+.submenu {
+    list-style: none;
+    position: absolute;
+    top: 100%;
+    /* Juste en dessous du parent */
+    left: 0;
+    background-color: var(--col-White);
+    /* Fond des sous-menus */
+    padding: 5px 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: none;
+    /* Caché par défaut */
+    z-index: 10;
+}
+
+/* Style des liens des sous-menus */
+.submenu .sub-menu {
+    text-decoration: none;
+    color: #333;
+    padding: 8px 15px;
+    display: block;
+    white-space: nowrap;
+    /* Empêcher les retours à la ligne */
+    transition: background-color 0.3s ease;
+}
+
+/* Survol des liens des sous-menus */
+.submenu .sub-menu:hover {
+    background-color: var(--col-Black);
+    color: var(--col-White);
+}
+
+/* Afficher les sous-menus au survol de l'élément principal */
+.menu-item:hover .submenu {
+    display: block;
+}

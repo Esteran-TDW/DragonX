@@ -4,13 +4,22 @@ if (!defined('DIR_CLASS_SYS')) {
     die('Accès direct interdit');
 }
 
+// Inclusion des classes CSS de base
+$css = $System->autoloadCSS();
+
 // Définir le thème de base
 $themeCSS = 'default';
 
 try {
-    // Créer une instance de Style
-    // Récupérer toutes les balises <link>
-    $cssLinks = $Style->getCSSLinks();
+   
+
+    // Appelle la superglobale $Style
+    
+    if (!isset($Style)) {
+            throw new Exception('Style object not found.');
+        }
+
+   $cssLinks = $Style->getCSSLinks();
 
     // Parcourir et afficher les balises
     foreach ($cssLinks as $link) {
