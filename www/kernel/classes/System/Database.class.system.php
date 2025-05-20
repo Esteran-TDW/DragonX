@@ -25,10 +25,13 @@ class Database extends System
         if (empty($this->config)) {
             throw new Exception("Configuration non chargée");
         }
-
-        // Accès à l'objet global $Security
+     
         global $Security;
-
+        // Récupération de l'objet Security
+        if (!isset($Security)) {
+            throw new Exception('Security object not found.');
+        }
+        
         // Vérification de l'objet $security
         if (!$Security || !($Security instanceof Security)) {
             throw new Exception("L'objet Security est requis pour la classe Database");

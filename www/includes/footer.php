@@ -15,8 +15,8 @@ if (!defined('DIR_CLASS_SYS')) {
             </ul>
         </nav>
     </div>
-    <!-- JavaScript files -->
-    <script src="<?php echo JS; ?>/main.js"></script>
+
+    
 </footer>
 </body>
 

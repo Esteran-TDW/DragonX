@@ -1,0 +1,35 @@
+.login-form,
+.registrer-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+}
+
+.create-account-link {
+    margin-top: 10px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.password-field {
+    position: relative;
+    margin-top: 10px;
+}
+
+.password-field input {
+    width: 100%;
+    padding-right: 35px;
+    box-sizing: border-box;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    color: #555;
+    user-select: none;
+}
